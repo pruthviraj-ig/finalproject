@@ -12,16 +12,24 @@ class MovieController extends Controller
         $model = new MovieModel();
         $data['movies'] = $model->findAll();
 
-        return view('movie_list', $data);
+        return view('movie_list', $data);  // Allowing everyone to view movies
     }
 
     public function addMovie()
     {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login');
+        }
+        
         return view('add_movie');
     }
 
     public function saveMovie()
     {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login');
+        }
+        
         $model = new MovieModel();
 
         $data = [
