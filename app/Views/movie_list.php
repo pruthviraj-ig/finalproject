@@ -18,8 +18,17 @@
             </div>
         </div>
 
-        <?php if (isset($movies) && !empty($movies)): ?>
-            <div class="row">
+        <!-- Search Bar -->
+        <form method="get" action="<?php echo base_url('/movies'); ?>" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search for movies..." value="<?php echo isset($search) ? $search : ''; ?>">
+                <button type="submit" class="btn btn-outline-secondary">Search</button>
+            </div>
+        </form>
+
+        <!-- Display Local Movies -->
+        <div class="row">
+            <?php if (!empty($movies)): ?>
                 <?php foreach ($movies as $movie): ?>
                     <div class="col-md-4 mb-4">
                         <div class="card">
@@ -30,19 +39,33 @@
                                 <?php if (!empty($movie['poster'])): ?>
                                     <img src="<?php echo $movie['poster']; ?>" alt="Poster" class="img-fluid mb-3">
                                 <?php endif; ?>
-                                <?php if (session()->has('user_id')): ?>
-                                    <a href="#" class="btn btn-success">Add Review</a>
-                                <?php else: ?>
-                                    <a href="<?php echo base_url('/login'); ?>" class="btn btn-warning">Login to Add Review</a>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <!-- Display API Movies -->
+        <?php if (isset($apiMovies) && $apiMovies): ?>
+            <div class="mt-5">
+                <h2>Search Results from OMDb API</h2>
+                <div class="row">
+                    <?php foreach ($apiMovies['Search'] as $apiMovie): ?>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?php echo $apiMovie['Title']; ?></h5>
+                                    <p class="card-text">Year: <?php echo $apiMovie['Year']; ?></p>
+                                    <img src="<?php echo $apiMovie['Poster']; ?>" alt="Poster" class="img-fluid mb-3">
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
-        <?php else: ?>
-            <div class="alert alert-warning">No movies found. Add a new movie!</div>
         <?php endif; ?>
+
     </div>
 </body>
 </html>

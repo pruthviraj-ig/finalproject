@@ -9,26 +9,26 @@
         <h1>Add Movie</h1>
         <form method="post" action="<?php echo base_url('/save-movie'); ?>">
             <div class="mb-3">
-                <label>Title:</label>
-                <input type="text" name="title" class="form-control">
+                <label>Movie Title:</label>
+                <input type="text" name="title" class="form-control" required>
             </div>
             
             <div class="mb-3">
-                <label>Description:</label>
+                <label>Alternative Description (Optional):</label>
                 <textarea name="description" class="form-control"></textarea>
             </div>
-
+            
             <div class="mb-3">
-                <label>Release Date:</label>
+                <label>Alternative Release Date (Optional):</label>
                 <input type="date" name="release_date" class="form-control">
             </div>
-
+            
             <div class="mb-3">
-                <label>Poster URL:</label>
+                <label>Alternative Poster URL (Optional):</label>
                 <input type="text" name="poster" class="form-control">
             </div>
 
-            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="submit" class="btn btn-primary">Save Movie</button>
         </form>
     </div>
 </body>
