@@ -3,38 +3,63 @@
 namespace App\Controllers;
 
 use App\Models\MovieModel;
+use App\Models\ReviewModel;
 use CodeIgniter\Controller;
 
 class MovieController extends Controller
 {
-    private $apiKey = 'ef89affb';  // Your OMDb API Key
+    private $apiKey = 'ef89affb';
 
     public function index()
     {
         $model = new MovieModel();
+        $reviewModel = new ReviewModel();
+
         $search = $this->request->getGet('search');
         $data['movies'] = [];
         $data['search'] = $search;
 
         if ($search) {
-            // Search Movies in Database
             $localMovies = $model->like('title', $search)->findAll();
             $data['movies'] = $localMovies;
 
-            // Search Movies in OMDb API if not found locally
-            if (empty($localMovies)) {
-                $apiMovies = $this->fetchMovieDetails($search);
-                if ($apiMovies && $apiMovies['Response'] === "True") {
-                    $data['apiMovies'] = $apiMovies;
-                } else {
-                    $data['apiMovies'] = null;
-                }
+            // Fetch Movies from API if not found locally
+            $apiMovies = $this->fetchMovieDetails($search);
+            if ($apiMovies && $apiMovies['Response'] === "True") {
+                $data['apiMovies'] = $apiMovies['Search'];
+            } else {
+                $data['apiMovies'] = null;
             }
         } else {
-            $data['movies'] = $model->findAll();  // Fetch all movies from local database
+            $data['movies'] = $model->findAll();
+        }
+
+        foreach ($data['movies'] as &$movie) {
+            $movie['reviews'] = $reviewModel->where('movie_id', $movie['id'])->findAll();
         }
 
         return view('movie_list', $data);  
+    }
+
+    public function saveReview()
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login');
+        }
+
+        $reviewModel = new ReviewModel();
+
+        $data = [
+            'movie_id' => $this->request->getPost('movie_id'),
+            'user_id' => session()->get('user_id'),
+            'username' => session()->get('username'),
+            'review' => $this->request->getPost('review'),
+            'rating' => $this->request->getPost('rating')
+        ];
+
+        $reviewModel->save($data);
+
+        return $this->response->setJSON(['success' => true]);
     }
 
     public function fetchMovieDetails($title)
@@ -44,24 +69,5 @@ class MovieController extends Controller
 
         $response = file_get_contents($url);
         return json_decode($response, true);
-    }
-
-    public function saveMovie()
-    {
-        if (!session()->has('user_id')) {
-            return redirect()->to('/login');
-        }
-
-        $model = new MovieModel();
-
-        $data = [
-            'title' => $this->request->getPost('title'),
-            'description' => $this->request->getPost('description'),
-            'release_date' => $this->request->getPost('release_date'),
-            'poster' => $this->request->getPost('poster')
-        ];
-
-        $model->save($data);
-        return redirect()->to('/movies');
     }
 }

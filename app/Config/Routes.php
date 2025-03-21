@@ -19,5 +19,6 @@ $routes->get('/logout', 'UserController::logout');
  */
 $routes->get('/add-movie', 'MovieController::addMovie');
 $routes->post('/save-movie', 'MovieController::saveMovie');
+$routes->post('/save-review', 'MovieController::saveReview');
 
 
