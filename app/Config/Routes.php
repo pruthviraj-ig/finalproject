@@ -21,4 +21,9 @@ $routes->get('/add-movie', 'MovieController::addMovie');
 $routes->post('/save-movie', 'MovieController::saveMovie');
 $routes->post('/save-review', 'MovieController::saveReview');
 
+// Edit and Delete Review Routes
+$routes->post('/edit-review/(:num)', 'MovieController::editReview/$1');
+$routes->get('/delete-review/(:num)', 'MovieController::deleteReview/$1');
+
+
 
