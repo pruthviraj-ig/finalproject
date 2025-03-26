@@ -6,123 +6,121 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
-            background-color: #f0f0f0;
+            background: url('https://www.themoviedb.org/assets/2/v4/marketing/backgrounds/desktop_login-bg-7a9f09834f0eb20a37d66da50ef6e7d6c2ab3874ed249b67c3f01e97bd9ba3ac.jpg') no-repeat center center fixed;
+            background-size: cover;
+            background-blend-mode: overlay;
+            background-color: #141414; 
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
         }
-        .movie-poster {
-            height: 250px;
-            width: 100%;
-            object-fit: cover;
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #141414, #1f1f1f);
+            padding: 15px;
+            border-bottom: 2px solid red;
+        }
+
+        .movie-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .movie-card {
+            background: rgba(31, 31, 31, 0.9);
             border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            margin: 10px;
             transition: transform 0.3s;
-            height: 100%;
+            width: 200px;
         }
-        .card:hover {
-            transform: scale(1.03);
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px #ff1e56;
         }
-        .average-rating {
-            color: #ff9800;
-            margin-bottom: 5px;
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            object-fit: cover;
+        }
+
+        .btn-view-details {
+            background-color: #ff1e56;
+            color: white;
+            border: none;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-view-details:hover {
+            background-color: #ff4e00;
+        }
+
+        .navbar-custom a, .navbar-custom button {
+            color: white;
+        }
+
+        .navbar-custom button {
+            border: 1px solid red;
+            background: none;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>🎬 Movie List</h1>
+
+<!-- Navigation Bar -->
+<div class="navbar-custom d-flex justify-content-between align-items-center">
+    <h1>🎬 Movie List</h1>
+    
+    <div class="d-flex align-items-center">
+        <form method="get" action="<?= base_url('/movies'); ?>" class="d-flex me-3">
+            <input type="text" name="search" class="form-control" placeholder="Search movies..." value="<?= isset($search) ? $search : ''; ?>">
+            <button type="submit" class="btn btn-danger ms-2">Search</button>
+        </form>
         
-        <div class="d-flex align-items-center">
-            <form method="get" action="<?= base_url('/movies'); ?>" class="d-flex me-3">
-                <input type="text" name="search" class="form-control" placeholder="Search movies..." value="<?= isset($search) ? $search : ''; ?>">
-                <button type="submit" class="btn btn-outline-secondary ms-2">Search</button>
-            </form>
-            
-            <?php if (session()->has('user_id')): ?>
-                <a href="<?= base_url('/logout'); ?>" class="btn btn-danger me-2">Logout</a>
-            <?php else: ?>
-                <a href="<?= base_url('/login'); ?>" class="btn btn-primary me-2">Login</a>
-                <a href="<?= base_url('/register'); ?>" class="btn btn-secondary">Register</a>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Display API Movies -->
-    <?php if (isset($apiMovies) && !empty($apiMovies)): ?>
-        <h3>🔍 Search Results from OMDb API</h3>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
-            <?php foreach ($apiMovies as $apiMovie): ?>
-                <div class="col">
-                    <div class="card p-2">
-                        <img src="<?= $apiMovie['Poster'] ?>" class="card-img-top movie-poster" alt="Movie Poster">
-                        <div class="card-body text-center">
-                            <h6><?= $apiMovie['Title'] ?></h6>
-                            <p>Year: <?= $apiMovie['Year'] ?></p>
-                            <button class="btn btn-primary save-movie"
-                                    data-title="<?= $apiMovie['Title'] ?>"
-                                    data-description="Fetched from OMDb API"
-                                    data-release_date="<?= $apiMovie['Year'] ?>-01-01"
-                                    data-poster="<?= $apiMovie['Poster'] ?>">
-                                Save & View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-
-    <!-- Display Local Movies -->
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3 mt-4">
-        <?php if (isset($movies) && !empty($movies)): ?>
-            <?php foreach ($movies as $movie): ?>
-                <div class="col">
-                    <div class="card p-2">
-                        <?php if (!empty($movie['poster'])): ?>
-                            <img src="<?= $movie['poster']; ?>" class="card-img-top movie-poster" alt="Movie Poster">
-                        <?php endif; ?>
-                        <div class="card-body text-center">
-                            <h6><?= $movie['title']; ?></h6>
-                            <p class="average-rating">⭐ <?= number_format($movie['average_rating'], 1); ?> / 5</p>
-                            <a href="<?= base_url('/movie-detail/' . $movie['id']); ?>" class="btn btn-info">View Details</a>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+        <?php if (session()->has('user_id')): ?>
+            <a href="<?= base_url('/logout'); ?>" class="btn btn-danger">Logout</a>
         <?php else: ?>
-            <p>No movies found.</p>
+            <a href="<?= base_url('/login'); ?>" class="btn btn-primary">Login</a>
+            <a href="<?= base_url('/register'); ?>" class="btn btn-secondary">Register</a>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- AJAX Handling for Save Movie -->
+<div class="container-fluid mt-4">
+    <!-- Displaying Movies -->
+    <div class="movie-row">
+        <?php $counter = 0; ?>
+        <?php foreach ($movies as $movie): ?>
+            <?php if ($counter >= 16) break; ?> <!-- Stop rendering movies after 16 -->
+            <div class="movie-card">
+                <img src="<?= $movie['poster'] ?? 'https://via.placeholder.com/200x300'; ?>" class="movie-poster">
+                <div class="p-2 text-center">
+                    <h6><?= $movie['title']; ?></h6>
+                    <p>⭐ <?= number_format($movie['average_rating'], 1); ?> / 5</p>
+                    <a href="<?= base_url('/movie-detail/' . $movie['id']); ?>" class="btn btn-view-details">View Details</a>
+                </div>
+            </div>
+            <?php $counter++; ?>
+        <?php endforeach; ?>
+    </div>
+</div>
+
 <script>
     $(document).ready(function(){
-        $('.save-movie').click(function(){
-            var button = $(this);
-            var movieData = {
-                title: button.data('title'),
-                description: button.data('description'),
-                release_date: button.data('release_date'),
-                poster: button.data('poster')
-            };
-
-            $.ajax({
-                url: '<?= base_url('/save-movie-and-redirect'); ?>',
-                type: 'POST',
-                data: movieData,
-                success: function(response) {
-                    if (response.redirect) {
-                        window.location.href = response.redirect;
-                    }
-                }
-            });
+        $('.movie-row').on('wheel', function(e) {
+            e.preventDefault();
+            $(this).scrollLeft($(this).scrollLeft() + e.originalEvent.deltaY);
         });
     });
 </script>
+
 </body>
 </html>
