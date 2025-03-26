@@ -5,155 +5,145 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .star {
-            font-size: 24px;
-            color: gold;
+        body {
+            background-color: #f0f0f0;
         }
-        .average-rating {
-            font-size: 20px;
-            color: #555;
-            margin-bottom: 10px;
+        .movie-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            border: none;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        }
+        .movie-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
         }
         .movie-poster {
-            height: 400px;
+            height: 300px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 12px 12px 0 0;
         }
-        @media (max-width: 576px) {
-            .container {
-                padding: 10px;
-            }
-            h1 {
-                font-size: 24px;
-                text-align: center;
-            }
-            .card {
-                margin-bottom: 15px;
-            }
-            .btn, .form-control {
-                width: 100%;
-                margin-top: 5px;
-            }
+        .card-body h5 {
+            font-size: 1rem;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .card-body p {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 5px;
+            color: gray;
+        }
+        .card-body .btn {
+            width: 100%;
         }
     </style>
 </head>
 <body>
-<div class="container mt-5">
 
-    <!-- Header with Search Bar and User Status -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Movie List</h1>
-        
-        <!-- Search Form -->
-        <form method="get" action="<?= base_url('/movies'); ?>" class="d-flex">
-            <input type="text" name="search" class="form-control" placeholder="Search movies..." value="<?= isset($search) ? $search : ''; ?>">
-            <button type="submit" class="btn btn-outline-secondary ms-2">Search</button>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="<?= base_url('/movies'); ?>">Movie Review System</a>
+        <form class="d-flex ms-auto" method="get" action="<?= base_url('/movies'); ?>">
+            <input class="form-control me-2" type="search" name="search" placeholder="Search movies..." aria-label="Search">
+            <button class="btn btn-outline-light" type="submit">Search</button>
         </form>
-        
-        <!-- User Status -->
-        <div>
+        <div class="ms-3">
             <?php if (session()->has('user_id')): ?>
-                <a href="<?= base_url('/logout'); ?>" class="btn btn-danger ms-2">Logout</a>
+                <a href="<?= base_url('/logout'); ?>" class="btn btn-danger">Logout</a>
             <?php else: ?>
-                <a href="<?= base_url('/login'); ?>" class="btn btn-primary ms-2">Login</a>
-                <a href="<?= base_url('/register'); ?>" class="btn btn-secondary ms-2">Register</a>
+                <a href="<?= base_url('/login'); ?>" class="btn btn-primary">Login</a>
+                <a href="<?= base_url('/register'); ?>" class="btn btn-secondary">Register</a>
             <?php endif; ?>
         </div>
     </div>
+</nav>
+
+<div class="container">
 
     <!-- Display API Movies -->
     <?php if (isset($apiMovies) && !empty($apiMovies)): ?>
-        <h3>Search Results from OMDb API</h3>
+        <h3 class="mb-4">Search Results from OMDb API</h3>
         <div class="row">
-            <?php foreach ($apiMovies as $apiMovie): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <img src="<?= $apiMovie['Poster'] ?>" class="card-img-top movie-poster" alt="Movie Poster">
+            <?php foreach ($apiMovies as $index => $apiMovie): ?>
+                <div class="col-md-3 mb-4">
+                    <div class="card movie-card">
+                        <img src="<?= $apiMovie['Poster']; ?>" class="card-img-top movie-poster">
                         <div class="card-body">
-                            <h5 class="card-title"><?= $apiMovie['Title'] ?></h5>
-                            <p class="card-text">Year: <?= $apiMovie['Year'] ?></p>
+                            <h5><?= $apiMovie['Title']; ?></h5>
+                            <p>Year: <?= $apiMovie['Year']; ?></p>
+                            <button class="btn btn-primary save-movie" 
+                                    data-title="<?= $apiMovie['Title']; ?>"
+                                    data-year="<?= $apiMovie['Year']; ?>"
+                                    data-poster="<?= $apiMovie['Poster']; ?>">Save Movie</button>
                         </div>
                     </div>
                 </div>
+                <?php if (($index + 1) % 4 == 0): ?>
+                    </div><div class="row">  <!-- Break the row after 4 movies -->
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 
     <!-- Display Local Movies -->
     <div class="row">
-        <?php foreach ($movies as $movie): ?>
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5><?= $movie['title']; ?></h5>
-                        <p><?= $movie['description']; ?></p>
-                        <p>Released: <?= $movie['release_date']; ?></p>
-                        <p class="average-rating">Average Rating: <?= number_format($movie['average_rating'], 1); ?> / 5 ⭐</p>
+    <?php foreach ($movies as $index => $movie): ?>
+        <div class="col-md-3 mb-4">
+            <div class="card movie-card">
+                <div class="card-body">
+                    <h5><?= $movie['title']; ?></h5>
+                    <p><?= $movie['description']; ?></p>
+                    <p>Released: <?= $movie['release_date']; ?></p>
+                    <p>Average Rating: <?= number_format($movie['average_rating'], 1); ?> / 5 ⭐</p>
 
-                        <?php if ($movie['poster']): ?>
-                            <img src="<?= $movie['poster']; ?>" class="img-fluid mb-3">
-                        <?php endif; ?>
+                    <?php if ($movie['poster']): ?>
+                        <img src="<?= $movie['poster']; ?>" class="movie-poster mb-3">
+                    <?php endif; ?>
 
-                        <!-- Review Form -->
-                        <?php if (session()->has('user_id')): ?>
-                            <form class="review-form" data-movie-id="<?= $movie['id']; ?>">
-                                <div class="mb-3">
-                                    <label>Rating (Out of 5):</label>
-                                    <input type="number" name="rating" min="1" max="5" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <textarea name="review" class="form-control" placeholder="Write your review..." required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Submit Review</button>
-                            </form>
-                        <?php else: ?>
-                            <p><a href="<?= base_url('/login'); ?>">Login to add a review</a></p>
-                        <?php endif; ?>
-
-                        <!-- Display Reviews -->
-                        <h6>Reviews:</h6>
-                        <?php foreach ($movie['reviews'] as $review): ?>
-                            <div class="border p-2 mb-2">
-                                <strong><?= $review['username']; ?></strong> - Rated: <?= $review['rating']; ?>/5 ⭐
-                                <p><?= $review['review']; ?></p>
-                                <small>Posted on: <?= $review['created_at']; ?></small>
-
-                                <?php if (session()->get('user_id') == $review['user_id']): ?>
-                                    <!-- Edit Review Form -->
-                                    <form method="post" action="<?= base_url('/edit-review/' . $review['id']); ?>" class="d-inline">
-                                        <div class="mb-1 mt-2">
-                                            <textarea name="review" class="form-control mb-1"><?= $review['review']; ?></textarea>
-                                            <input type="number" name="rating" min="1" max="5" value="<?= $review['rating']; ?>" class="form-control mb-1">
-                                        </div>
-                                        <button type="submit" class="btn btn-warning btn-sm mb-2">Edit</button>
-                                    </form>
-                                    <a href="<?= base_url('/delete-review/' . $review['id']); ?>" class="btn btn-danger btn-sm mb-2">Delete</a>
-                                <?php endif; ?>
+                    <?php if (session()->has('user_id')): ?>
+                        <form method="post" action="<?= base_url('/save-review'); ?>">
+                            <input type="hidden" name="movie_id" value="<?= $movie['id']; ?>">
+                            <div class="mb-3">
+                                <label>Rating (Out of 5):</label>
+                                <input type="number" name="rating" min="1" max="5" class="form-control" required>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
+                            <div class="mb-3">
+                                <textarea name="review" class="form-control" placeholder="Write your review..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
-        <?php endforeach; ?>
+        </div>
+        <?php if (($index + 1) % 4 == 0): ?>
+            </div><div class="row">  <!-- Break the row after 4 movies -->
+        <?php endif; ?>
+    <?php endforeach; ?>
     </div>
 </div>
 
-<!-- AJAX Handling for Review Submission -->
 <script>
-    $(document).ready(function(){
-        $('.review-form').submit(function(e){
+    $(document).ready(function() {
+        $('.save-movie').click(function(e) {
             e.preventDefault();
-            var form = $(this);
-            var movieId = form.data('movie-id');
-            var formData = form.serialize();
+            var button = $(this);
+            var title = button.data('title');
+            var year = button.data('year');
+            var poster = button.data('poster');
 
             $.ajax({
-                url: '<?= base_url('/save-review'); ?>',
-                type: 'POST',
-                data: formData + '&movie_id=' + movieId,
+                url: '<?= base_url('/save-api-movie'); ?>',
+                method: 'POST',
+                data: { title: title, year: year, poster: poster },
                 success: function(response) {
                     if (response.success) {
-                        alert('Review submitted successfully!');
+                        alert('Movie saved successfully!');
                         location.reload();
                     }
                 }
@@ -161,5 +151,6 @@
         });
     });
 </script>
+
 </body>
 </html>
