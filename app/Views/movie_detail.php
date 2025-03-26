@@ -57,6 +57,13 @@
         h2, h3 {
             color: #ff1e56;
         }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: grey;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -121,10 +128,14 @@
     </div>
 </div>
 
+<!-- Copyright Notice -->
+<footer>
+    &copy; Pruthviraj Patil - 2310346
+</footer>
+
 <!-- AJAX Handling for Reviews -->
 <script>
     $(document).ready(function(){
-        // Save Review
         $('.review-form').submit(function(e){
             e.preventDefault();
             var form = $(this);
@@ -143,7 +154,6 @@
             });
         });
 
-        // Delete Review
         $('.delete-review').click(function(){
             var reviewId = $(this).data('id');
             if (confirm('Are you sure you want to delete this review?')) {
@@ -158,7 +168,6 @@
             }
         });
 
-        // Edit Review
         $('.edit-review-form').submit(function(e){
             e.preventDefault();
             var form = $(this);

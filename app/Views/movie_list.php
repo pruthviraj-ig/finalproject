@@ -51,7 +51,7 @@
         }
 
         .movie-title {
-            height: 40px; /* Make sure all titles occupy the same height */
+            height: 40px; 
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -78,6 +78,12 @@
             background: none;
             margin-left: 10px;
         }
+
+        footer {
+            color: #888;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -102,11 +108,12 @@
 </div>
 
 <div class="container-fluid mt-4">
-    <!-- Displaying Movies -->
+
+    <!-- Display Local Movies -->
     <div class="movie-row">
         <?php $counter = 0; ?>
         <?php foreach ($movies as $movie): ?>
-            <?php if ($counter >= 16) break; ?> <!-- Stop rendering movies after 16 -->
+            <?php if ($counter >= 16) break; ?> 
             <div class="movie-card">
                 <img src="<?= $movie['poster'] ?? 'https://via.placeholder.com/200x300'; ?>" class="movie-poster">
                 <div class="p-2 text-center">
@@ -118,13 +125,59 @@
             <?php $counter++; ?>
         <?php endforeach; ?>
     </div>
+
+    <!-- Display Movies From API -->
+    <?php if (isset($apiMovies) && !empty($apiMovies)): ?>
+        <h2 style="text-align: center; color: #ff1e56;">Movies from OMDb API</h2>
+        <div class="movie-row">
+            <?php foreach ($apiMovies as $apiMovie): ?>
+                <div class="movie-card">
+                    <img src="<?= $apiMovie['Poster'] ?? 'https://via.placeholder.com/200x300'; ?>" class="movie-poster">
+                    <div class="p-2 text-center">
+                        <div class="movie-title"><?= $apiMovie['Title']; ?></div>
+                        <p>Year: <?= $apiMovie['Year']; ?></p>
+                        <button class="btn btn-view-details save-movie"
+                                data-title="<?= $apiMovie['Title']; ?>"
+                                data-description="Fetched from OMDb API"
+                                data-release_date="<?= $apiMovie['Year']; ?>-01-01"
+                                data-poster="<?= $apiMovie['Poster']; ?>">
+                            Save & View Details
+                        </button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
 </div>
 
+<!-- Footer -->
+<footer>
+    &copy; <?= date('Y'); ?> Pruthviraj Patil (2310346). All Rights Reserved.
+</footer>
+
+<!-- AJAX Handling for Save Movie -->
 <script>
     $(document).ready(function(){
-        $('.movie-row').on('wheel', function(e) {
-            e.preventDefault();
-            $(this).scrollLeft($(this).scrollLeft() + e.originalEvent.deltaY);
+        $('.save-movie').click(function(){
+            var button = $(this);
+            var movieData = {
+                title: button.data('title'),
+                description: button.data('description'),
+                release_date: button.data('release_date'),
+                poster: button.data('poster')
+            };
+
+            $.ajax({
+                url: '<?= base_url('/save-movie-and-redirect'); ?>',
+                type: 'POST',
+                data: movieData,
+                success: function(response) {
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
+                    }
+                }
+            });
         });
     });
 </script>

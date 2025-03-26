@@ -13,6 +13,7 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            flex-direction: column;
         }
 
         .login-box {
@@ -60,6 +61,13 @@
         a:hover {
             color: #ff4e00;
         }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: grey;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -78,5 +86,10 @@
             <p>New user? <a href="<?= base_url('/register'); ?>">Register Here</a></p>
         </div>
     </div>
+
+    <!-- Copyright Notice -->
+    <footer>
+        &copy; Pruthviraj Patil - 2310346
+    </footer>
 </body>
 </html>

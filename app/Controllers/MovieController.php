@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace App\Controllers;
 
@@ -16,7 +16,7 @@ class MovieController extends Controller
         $reviewModel = new ReviewModel();
 
         $search = $this->request->getGet('search');
-        $data['movies'] = [];  // Initialize movies as an empty array
+        $data['movies'] = [];
         $data['search'] = $search;
         $data['apiMovies'] = null;
 
@@ -54,7 +54,6 @@ class MovieController extends Controller
             'poster' => $this->request->getPost('poster'),
         ];
 
-        // Check if the movie already exists in the database
         $existingMovie = $model->where('title', $data['title'])->first();
         if (!$existingMovie) {
             $model->save($data);
@@ -144,7 +143,7 @@ class MovieController extends Controller
 
         $apiData = json_decode($response, true);
 
-        if ($apiData && $apiData['Response'] === "True") {
+        if (isset($apiData['Search'])) {
             return $apiData;
         }
 
