@@ -50,6 +50,13 @@
             object-fit: cover;
         }
 
+        .movie-title {
+            height: 40px; /* Make sure all titles occupy the same height */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .btn-view-details {
             background-color: #ff1e56;
             color: white;
@@ -103,7 +110,7 @@
             <div class="movie-card">
                 <img src="<?= $movie['poster'] ?? 'https://via.placeholder.com/200x300'; ?>" class="movie-poster">
                 <div class="p-2 text-center">
-                    <h6><?= $movie['title']; ?></h6>
+                    <div class="movie-title"><?= $movie['title']; ?></div>
                     <p>⭐ <?= number_format($movie['average_rating'], 1); ?> / 5</p>
                     <a href="<?= base_url('/movie-detail/' . $movie['id']); ?>" class="btn btn-view-details">View Details</a>
                 </div>

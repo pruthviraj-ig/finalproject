@@ -7,91 +7,77 @@
         body {
             background-color: #141414;
             color: white;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
 
-        .container-custom {
-            background: rgba(31, 31, 31, 0.9);
+        .register-box {
+            background-color: #1f1f1f;
             padding: 40px;
-            border-radius: 10px;
-            width: 400px;
+            border-radius: 15px;
             box-shadow: 0 0 15px #ff1e56;
-            border: 1px solid #ff1e56;
+            width: 400px;
         }
 
-        h1 {
+        .register-box h1 {
             text-align: center;
             color: #ff1e56;
             margin-bottom: 30px;
         }
 
         .form-control {
-            background-color: #1f1f1f;
-            color: white;
+            background-color: #141414;
             border: 1px solid #ff1e56;
+            color: white;
         }
 
         .form-control:focus {
-            background-color: #1f1f1f;
-            color: white;
-            border-color: #ff1e56;
+            outline: none;
             box-shadow: none;
+            border-color: #ff4e00;
         }
 
         .btn-custom {
             background-color: #ff1e56;
+            color: white;
             border: none;
             width: 100%;
-            margin-top: 10px;
-            transition: background-color 0.3s;
         }
 
         .btn-custom:hover {
             background-color: #ff4e00;
         }
 
-        .link-section p {
-            text-align: center;
-            margin-top: 15px;
-            color: white;
-        }
-
-        .link-section a {
+        a {
             color: #ff1e56;
             text-decoration: none;
-            font-weight: bold;
         }
 
-        .link-section a:hover {
-            text-decoration: underline;
+        a:hover {
             color: #ff4e00;
         }
     </style>
 </head>
 <body>
-    <div class="container-custom">
+    <div class="register-box">
         <h1>Register</h1>
         <form method="post" action="<?= base_url('/store'); ?>">
             <div class="mb-3">
-                <label>Username:</label>
-                <input type="text" name="username" class="form-control" required>
+                <input type="text" name="username" class="form-control" placeholder="Username" required>
             </div>
             <div class="mb-3">
-                <label>Email:</label>
-                <input type="email" name="email" class="form-control" required>
+                <input type="email" name="email" class="form-control" placeholder="Email" required>
             </div>
             <div class="mb-3">
-                <label>Password:</label>
-                <input type="password" name="password" class="form-control" required>
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
             </div>
             <button type="submit" class="btn btn-custom">Register</button>
         </form>
-        <div class="link-section">
+        <div class="mt-3 text-center">
             <p>Already a user? <a href="<?= base_url('/login'); ?>">Login Here</a></p>
         </div>
     </div>
