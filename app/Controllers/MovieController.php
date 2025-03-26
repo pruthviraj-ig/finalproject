@@ -24,17 +24,14 @@ class MovieController extends Controller
             $localMovies = $model->like('title', $search)->findAll();
             $data['movies'] = $localMovies;
 
-            // Fetch Movies from API if search is provided
             $apiMovies = $this->fetchMovieDetails($search);
             if ($apiMovies && $apiMovies['Response'] === "True") {
                 $data['apiMovies'] = $apiMovies['Search'];
             }
         } else {
-            // Load all movies from the local database
             $data['movies'] = $model->findAll();
         }
 
-        // Fetch reviews and average ratings for each movie
         foreach ($data['movies'] as &$movie) {
             $movie['reviews'] = $reviewModel->where('movie_id', $movie['id'])->findAll();
             $movie['average_rating'] = $reviewModel->getAverageRating($movie['id']) ?? 0;
@@ -71,6 +68,13 @@ class MovieController extends Controller
         $reviewModel = new ReviewModel();
 
         $movie = $model->find($id);
+        if ($movie) {
+            $apiMovieDetails = $this->fetchDetailedMovieInfo($movie['title']);
+            if ($apiMovieDetails) {
+                $movie = array_merge($movie, $apiMovieDetails);  // Combine DB data with API data
+            }
+        }
+
         $reviews = $reviewModel->where('movie_id', $id)->findAll();
         $averageRating = $reviewModel->getAverageRating($id) ?? 0;
 
@@ -106,25 +110,6 @@ class MovieController extends Controller
         return $this->response->setJSON(['success' => true]);
     }
 
-    public function editReview($id)
-    {
-        $reviewModel = new ReviewModel();
-        $data = [
-            'review' => $this->request->getPost('review'),
-            'rating' => $this->request->getPost('rating'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $reviewModel->update($id, $data);
-        return redirect()->to('/movies');
-    }
-
-    public function deleteReview($id)
-    {
-        $reviewModel = new ReviewModel();
-        $reviewModel->delete($id);
-        return redirect()->to('/movies');
-    }
-
     public function fetchMovieDetails($title)
     {
         $title = urlencode($title);
@@ -141,10 +126,36 @@ class MovieController extends Controller
             return null;
         }
 
+        return json_decode($response, true);
+    }
+
+    public function fetchDetailedMovieInfo($title)
+    {
+        $title = urlencode($title);
+        $url = "http://www.omdbapi.com/?t=$title&apikey={$this->apiKey}&plot=full";
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            return null;
+        }
+
         $apiData = json_decode($response, true);
 
-        if (isset($apiData['Search'])) {
-            return $apiData;
+        if ($apiData && $apiData['Response'] === "True") {
+            return [
+                'genre' => $apiData['Genre'] ?? '',
+                'director' => $apiData['Director'] ?? '',
+                'actors' => $apiData['Actors'] ?? '',
+                'plot' => $apiData['Plot'] ?? '',
+                'runtime' => $apiData['Runtime'] ?? '',
+                'language' => $apiData['Language'] ?? ''
+            ];
         }
 
         return null;

@@ -81,6 +81,31 @@
             <p><strong>Release Date:</strong> <?= $movie['release_date']; ?></p>
             <p><strong>Average Rating:</strong> ⭐ <?= number_format($averageRating, 1); ?> / 5</p>
 
+            <!-- New Information from API -->
+            <?php if (!empty($movie['genre'])): ?>
+                <p><strong>Genre:</strong> <?= $movie['genre']; ?></p>
+            <?php endif; ?>
+
+            <?php if (!empty($movie['director'])): ?>
+                <p><strong>Director:</strong> <?= $movie['director']; ?></p>
+            <?php endif; ?>
+
+            <?php if (!empty($movie['actors'])): ?>
+                <p><strong>Actors:</strong> <?= $movie['actors']; ?></p>
+            <?php endif; ?>
+
+            <?php if (!empty($movie['plot'])): ?>
+                <p><strong>Plot:</strong> <?= $movie['plot']; ?></p>
+            <?php endif; ?>
+
+            <?php if (!empty($movie['runtime'])): ?>
+                <p><strong>Runtime:</strong> <?= $movie['runtime']; ?></p>
+            <?php endif; ?>
+
+            <?php if (!empty($movie['language'])): ?>
+                <p><strong>Language:</strong> <?= $movie['language']; ?></p>
+            <?php endif; ?>
+
             <!-- Review Form -->
             <?php if (session()->has('user_id')): ?>
                 <form class="review-form mt-3" method="post" action="<?= base_url('/save-review'); ?>">
@@ -108,16 +133,13 @@
                             <strong style="color: #ff1e56;"><?= $review['username']; ?>:</strong> <?= $review['rating']; ?>/5 ⭐
                             <p><?= $review['review']; ?></p>
 
-                            <!-- Edit & Delete Options -->
                             <?php if (session()->get('user_id') == $review['user_id']): ?>
-                                <!-- Edit Review -->
                                 <form method="post" action="<?= base_url('/edit-review/' . $review['id']); ?>" class="d-inline edit-review-form">
                                     <textarea name="review" class="form-control mb-1"><?= $review['review']; ?></textarea>
                                     <input type="number" name="rating" min="1" max="5" value="<?= $review['rating']; ?>" class="form-control mb-1">
                                     <button type="submit" class="btn btn-warning btn-sm">Edit</button>
                                 </form>
 
-                                <!-- Delete Review -->
                                 <button class="btn btn-danger btn-sm delete-review" data-id="<?= $review['id']; ?>">Delete</button>
                             <?php endif; ?>
                         </div>
@@ -133,7 +155,6 @@
     &copy; Pruthviraj Patil - 2310346
 </footer>
 
-<!-- AJAX Handling for Reviews -->
 <script>
     $(document).ready(function(){
         $('.review-form').submit(function(e){
@@ -160,29 +181,12 @@
                 $.ajax({
                     url: '<?= base_url('/delete-review/'); ?>' + reviewId,
                     type: 'GET',
-                    success: function(response) {
+                    success: function() {
                         alert('Review deleted successfully!');
                         location.reload();
                     }
                 });
             }
-        });
-
-        $('.edit-review-form').submit(function(e){
-            e.preventDefault();
-            var form = $(this);
-            var actionUrl = form.attr('action');
-            var formData = form.serialize();
-
-            $.ajax({
-                url: actionUrl,
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    alert('Review updated successfully!');
-                    location.reload();
-                }
-            });
         });
     });
 </script>
