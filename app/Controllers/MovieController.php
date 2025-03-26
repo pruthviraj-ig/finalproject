@@ -8,7 +8,7 @@ use CodeIgniter\Controller;
 
 class MovieController extends Controller
 {
-    private $apiKey = 'ef89affb';  // Your API Key
+    private $apiKey = 'ef89affb';  // Your OMDb API Key
 
     public function index()
     {
@@ -16,7 +16,7 @@ class MovieController extends Controller
         $reviewModel = new ReviewModel();
 
         $search = $this->request->getGet('search');
-        $data['movies'] = [];
+        $data['movies'] = [];  // Initialize movies as an empty array
         $data['search'] = $search;
         $data['apiMovies'] = null;
 
@@ -30,18 +30,20 @@ class MovieController extends Controller
                 $data['apiMovies'] = $apiMovies['Search'];
             }
         } else {
+            // Load all movies from the local database
             $data['movies'] = $model->findAll();
         }
 
+        // Fetch reviews and average ratings for each movie
         foreach ($data['movies'] as &$movie) {
             $movie['reviews'] = $reviewModel->where('movie_id', $movie['id'])->findAll();
-            $movie['average_rating'] = $reviewModel->getAverageRating($movie['id']);
+            $movie['average_rating'] = $reviewModel->getAverageRating($movie['id']) ?? 0;
         }
 
         return view('movie_list', $data);
     }
 
-    public function saveMovie()
+    public function saveMovieAndRedirect()
     {
         $model = new MovieModel();
 
@@ -52,12 +54,34 @@ class MovieController extends Controller
             'poster' => $this->request->getPost('poster'),
         ];
 
-        // Save movie if it doesn't already exist
-        if (!$model->where('title', $data['title'])->first()) {
+        // Check if the movie already exists in the database
+        $existingMovie = $model->where('title', $data['title'])->first();
+        if (!$existingMovie) {
             $model->save($data);
+            $movieId = $model->insertID();
+        } else {
+            $movieId = $existingMovie['id'];
         }
 
-        return $this->response->setJSON(['success' => true]);
+        return $this->response->setJSON(['redirect' => base_url('/movie-detail/' . $movieId)]);
+    }
+
+    public function detail($id)
+    {
+        $model = new MovieModel();
+        $reviewModel = new ReviewModel();
+
+        $movie = $model->find($id);
+        $reviews = $reviewModel->where('movie_id', $id)->findAll();
+        $averageRating = $reviewModel->getAverageRating($id) ?? 0;
+
+        $data = [
+            'movie' => $movie,
+            'reviews' => $reviews,
+            'averageRating' => $averageRating
+        ];
+
+        return view('movie_detail', $data);
     }
 
     public function saveReview()
@@ -91,14 +115,14 @@ class MovieController extends Controller
             'rating' => $this->request->getPost('rating'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
-        $reviewModel->updateReview($id, $data);
+        $reviewModel->update($id, $data);
         return redirect()->to('/movies');
     }
 
     public function deleteReview($id)
     {
         $reviewModel = new ReviewModel();
-        $reviewModel->deleteReview($id);
+        $reviewModel->delete($id);
         return redirect()->to('/movies');
     }
 
@@ -107,7 +131,7 @@ class MovieController extends Controller
         $title = urlencode($title);
         $url = "http://www.omdbapi.com/?s=$title&apikey={$this->apiKey}";
 
-        $ch = curl_init();  // Initialize cURL
+        $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
