@@ -10,6 +10,7 @@ class ReviewModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['movie_id', 'user_id', 'username', 'review', 'rating', 'created_at', 'updated_at'];
 
+    // Calculate the average rating for a movie
     public function getAverageRating($movie_id)
     {
         return $this->selectAvg('rating')
@@ -19,8 +20,15 @@ class ReviewModel extends Model
                     ->rating;
     }
 
-    public function getReviewsByMovieId($movie_id)
+    // Update a review by ID
+    public function updateReview($id, $data)
     {
-        return $this->where('movie_id', $movie_id)->findAll();
+        return $this->update($id, $data);
+    }
+
+    // Delete a review by ID
+    public function deleteReview($id)
+    {
+        return $this->delete($id);
     }
 }

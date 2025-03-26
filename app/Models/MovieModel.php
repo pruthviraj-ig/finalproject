@@ -10,9 +10,13 @@ class MovieModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['title', 'description', 'release_date', 'poster'];
 
-    // Check if a movie already exists in the database
-    public function getMovieByTitle($title)
+    // Save movie only if it doesn't already exist
+    public function saveIfNotExists($data)
     {
-        return $this->where('title', $title)->first();
+        $existingMovie = $this->where('title', $data['title'])->first();
+
+        if (!$existingMovie) {  // Movie doesn't exist, so save it
+            $this->insert($data);
+        }
     }
 }
