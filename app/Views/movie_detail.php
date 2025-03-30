@@ -2,9 +2,15 @@
 <html>
 <head>
     <title><?= $movie['title']; ?> - Movie Details</title>
+
+    <!-- I'm using Bootstrap here for layout and responsiveness -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+
+    <!-- jQuery added so I can use AJAX below for reviews -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <style>
+      
         body {
             background-color: #141414;
             color: white;
@@ -72,20 +78,23 @@
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="row">
-        <!-- Movie Poster -->
+
+        <!-- movie image on left -->
         <div class="col-md-4 text-center">
             <img src="<?= $movie['poster']; ?>" class="img-fluid mb-3" alt="Movie Poster">
         </div>
 
-        <!-- Movie Details -->
+        <!-- movie info on right -->
         <div class="col-md-8">
             <h2><?= $movie['title']; ?></h2>
             <p><strong>From OMDb API</strong></p>
             <p><strong>Release Date:</strong> <?= $movie['release_date']; ?></p>
             <p><strong>Average Rating:</strong> ⭐ <?= number_format($averageRating, 1); ?> / 5</p>
 
+            <!-- Display more info if available from API -->
             <?php if (!empty($movie['genre'])): ?><p><strong>Genre:</strong> <?= $movie['genre']; ?></p><?php endif; ?>
             <?php if (!empty($movie['director'])): ?><p><strong>Director:</strong> <?= $movie['director']; ?></p><?php endif; ?>
             <?php if (!empty($movie['actors'])): ?><p><strong>Actors:</strong> <?= $movie['actors']; ?></p><?php endif; ?>
@@ -93,23 +102,30 @@
             <?php if (!empty($movie['runtime'])): ?><p><strong>Runtime:</strong> <?= $movie['runtime']; ?></p><?php endif; ?>
             <?php if (!empty($movie['language'])): ?><p><strong>Language:</strong> <?= $movie['language']; ?></p><?php endif; ?>
 
-            <!-- Review Form -->
+            <!-- If logged in, show the review form -->
             <?php if (session()->has('user_id')): ?>
+                <!-- submitting review through AJAX (see JS below) -->
                 <form class="review-form mt-3" method="post" action="<?= base_url('/save-review'); ?>">
                     <input type="hidden" name="movie_id" value="<?= $movie['id']; ?>">
+
                     <div class="mb-3">
+                        <!-- user enters rating -->
                         <input type="number" name="rating" min="1" max="5" placeholder="Rating (1-5)" class="form-control" required>
                     </div>
+
                     <div class="mb-3">
+                        <!-- user types review -->
                         <textarea name="review" class="form-control" placeholder="Your review..." required></textarea>
                     </div>
+
                     <button type="submit" class="btn btn-custom">Submit Review</button>
                 </form>
             <?php else: ?>
+                <!-- show login link if not logged in -->
                 <p><strong>Please <a href="<?= base_url('/login'); ?>" style="color: #ff1e56;">Login</a> to leave a review.</strong></p>
             <?php endif; ?>
 
-            <!-- ⭐ Updated Reviews Section -->
+            <!--  Reviews Display (with edit & delete options) -->
             <h3 class="mt-4">Reviews</h3>
             <div id="reviews-section">
                 <?php if (empty($reviews)): ?>
@@ -118,11 +134,11 @@
                     <?php foreach ($reviews as $review): ?>
                         <div class="review-box">
                             <strong style="color: #ff1e56;"><?= $review['username']; ?>:</strong>
-                            <?php
-                                $rating = intval($review['rating']);
-                                echo str_repeat("⭐", $rating);
-                            ?>
+                            <?= str_repeat("⭐", intval($review['rating'])); ?>
+
                             <p><?= $review['review']; ?></p>
+
+                            <!-- user can edit/delete own reviews -->
                             <?php if (session()->get('user_id') == $review['user_id']): ?>
                                 <form method="post" action="<?= base_url('/edit-review/' . $review['id']); ?>" class="edit-review-form">
                                     <textarea name="review" class="form-control mb-1"><?= $review['review']; ?></textarea>
@@ -136,25 +152,25 @@
                 <?php endif; ?>
             </div>
 
-            <!-- 🎥 Nearby Cinemas -->
+            <!-- 🗺️ Show Nearby Cinemas (API section below in JS) -->
             <h3 class="mt-5" style="color: #ff1e56;">🎥 Nearby Cinemas</h3>
             <div id="cinema-results" class="mt-3 text-start" style="font-size: 0.95rem;"></div>
         </div>
     </div>
 </div>
 
-<!-- Footer -->
+<!-- footer with name -->
 <footer>
     &copy; Pruthviraj Patil - 2310346
 </footer>
 
-<!-- JS Logic -->
+<!-- Javascript: AJAX + Cinema API + Review Actions -->
 <script>
     $(document).ready(function () {
+        // AJAX to handle review form submission (so page doesn't reload)
         $('.review-form').submit(function (e) {
             e.preventDefault();
-            var form = $(this);
-            var formData = form.serialize();
+            var formData = $(this).serialize();
 
             $.ajax({
                 url: '<?= base_url('/save-review'); ?>',
@@ -163,7 +179,7 @@
                 success: function (response) {
                     if (response.success) {
                         alert('Review submitted successfully!');
-                        location.reload();
+                        location.reload(); // reload to show review
                     } else {
                         alert('Failed to submit review.');
                     }
@@ -174,6 +190,7 @@
             });
         });
 
+        // when user clicks delete on a review (AJAX)
         $('.delete-review').click(function () {
             var reviewId = $(this).data('id');
             if (confirm('Are you sure you want to delete this review?')) {
@@ -196,6 +213,7 @@
         });
     });
 
+    //Using geolocation to find nearby cinemas (via OpenStreetMap Overpass API)
     function fetchNearbyCinemas(lat, lon) {
         const query = `
             [out:json];
@@ -223,8 +241,9 @@
                 const lat = place.lat;
                 const lon = place.lon;
 
-                const mapEmbed = `<iframe width="100%" height="200" frameborder="0" style="border:0; margin-top:10px;" 
-                    src="https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=16&output=embed" allowfullscreen></iframe>`;
+                const mapEmbed = `<iframe width="100%" height="200" frameborder="0"
+                    src="https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=16&output=embed"
+                    allowfullscreen></iframe>`;
 
                 const div = document.createElement("div");
                 div.innerHTML = `🎬 <strong>${name}</strong><br>${mapEmbed}<br><br>`;
@@ -236,6 +255,7 @@
         });
     }
 
+    //  Geolocation (asks user's permission)
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
             fetchNearbyCinemas(position.coords.latitude, position.coords.longitude);
