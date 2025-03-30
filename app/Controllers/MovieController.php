@@ -71,7 +71,7 @@ class MovieController extends Controller
         if ($movie) {
             $apiMovieDetails = $this->fetchDetailedMovieInfo($movie['title']);
             if ($apiMovieDetails) {
-                $movie = array_merge($movie, $apiMovieDetails);  // Combine DB data with API data
+                $movie = array_merge($movie, $apiMovieDetails);
             }
         }
 
@@ -106,6 +106,29 @@ class MovieController extends Controller
         ];
 
         $reviewModel->save($data);
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function editReview($id)
+    {
+        $reviewModel = new ReviewModel();
+
+        $data = [
+            'review' => $this->request->getPost('review'),
+            'rating' => $this->request->getPost('rating'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        $reviewModel->updateReview($id, $data);
+
+        return redirect()->back(); // Go back to the movie detail page
+    }
+
+    public function deleteReview($id)
+    {
+        $reviewModel = new ReviewModel();
+        $reviewModel->deleteReview($id);
 
         return $this->response->setJSON(['success' => true]);
     }

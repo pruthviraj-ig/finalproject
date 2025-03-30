@@ -48,7 +48,7 @@
         }
 
         .review-box {
-            background-color: #1f1f1f;
+            background-color: #2a2a2a;
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 10px;
@@ -81,7 +81,6 @@
             <p><strong>Release Date:</strong> <?= $movie['release_date']; ?></p>
             <p><strong>Average Rating:</strong> ⭐ <?= number_format($averageRating, 1); ?> / 5</p>
 
-            <!-- New Information from API -->
             <?php if (!empty($movie['genre'])): ?>
                 <p><strong>Genre:</strong> <?= $movie['genre']; ?></p>
             <?php endif; ?>
@@ -122,7 +121,7 @@
                 <p><strong>Please <a href="<?= base_url('/login'); ?>" style="color: #ff1e56;">Login</a> to leave a review.</strong></p>
             <?php endif; ?>
 
-            <!-- Display Reviews -->
+            <!-- Reviews Section -->
             <h3 class="mt-4">Reviews</h3>
             <div id="reviews-section">
                 <?php if (empty($reviews)): ?>
@@ -134,13 +133,12 @@
                             <p><?= $review['review']; ?></p>
 
                             <?php if (session()->get('user_id') == $review['user_id']): ?>
-                                <form method="post" action="<?= base_url('/edit-review/' . $review['id']); ?>" class="d-inline edit-review-form">
+                                <form method="post" action="<?= base_url('/edit-review/' . $review['id']); ?>" class="edit-review-form">
                                     <textarea name="review" class="form-control mb-1"><?= $review['review']; ?></textarea>
                                     <input type="number" name="rating" min="1" max="5" value="<?= $review['rating']; ?>" class="form-control mb-1">
                                     <button type="submit" class="btn btn-warning btn-sm">Edit</button>
                                 </form>
-
-                                <button class="btn btn-danger btn-sm delete-review" data-id="<?= $review['id']; ?>">Delete</button>
+                                <button class="btn btn-danger btn-sm delete-review mt-2" data-id="<?= $review['id']; ?>">Delete</button>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
@@ -150,14 +148,15 @@
     </div>
 </div>
 
-<!-- Copyright Notice -->
+<!-- Footer -->
 <footer>
     &copy; Pruthviraj Patil - 2310346
 </footer>
 
+<!-- AJAX -->
 <script>
-    $(document).ready(function(){
-        $('.review-form').submit(function(e){
+    $(document).ready(function () {
+        $('.review-form').submit(function (e) {
             e.preventDefault();
             var form = $(this);
             var formData = form.serialize();
@@ -166,29 +165,42 @@
                 url: '<?= base_url('/save-review'); ?>',
                 type: 'POST',
                 data: formData,
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         alert('Review submitted successfully!');
                         location.reload();
+                    } else {
+                        alert('Failed to submit review.');
                     }
+                },
+                error: function () {
+                    alert('Error submitting review.');
                 }
             });
         });
 
-        $('.delete-review').click(function(){
+        $('.delete-review').click(function () {
             var reviewId = $(this).data('id');
             if (confirm('Are you sure you want to delete this review?')) {
                 $.ajax({
                     url: '<?= base_url('/delete-review/'); ?>' + reviewId,
                     type: 'GET',
-                    success: function() {
-                        alert('Review deleted successfully!');
-                        location.reload();
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Review deleted successfully!');
+                            location.reload();
+                        } else {
+                            alert('Failed to delete review.');
+                        }
+                    },
+                    error: function () {
+                        alert('Error deleting review.');
                     }
                 });
             }
         });
     });
 </script>
+
 </body>
 </html>
