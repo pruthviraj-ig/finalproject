@@ -64,6 +64,11 @@
             color: grey;
             font-size: 12px;
         }
+
+        iframe {
+            margin-top: 10px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -81,29 +86,12 @@
             <p><strong>Release Date:</strong> <?= $movie['release_date']; ?></p>
             <p><strong>Average Rating:</strong> ⭐ <?= number_format($averageRating, 1); ?> / 5</p>
 
-            <?php if (!empty($movie['genre'])): ?>
-                <p><strong>Genre:</strong> <?= $movie['genre']; ?></p>
-            <?php endif; ?>
-
-            <?php if (!empty($movie['director'])): ?>
-                <p><strong>Director:</strong> <?= $movie['director']; ?></p>
-            <?php endif; ?>
-
-            <?php if (!empty($movie['actors'])): ?>
-                <p><strong>Actors:</strong> <?= $movie['actors']; ?></p>
-            <?php endif; ?>
-
-            <?php if (!empty($movie['plot'])): ?>
-                <p><strong>Plot:</strong> <?= $movie['plot']; ?></p>
-            <?php endif; ?>
-
-            <?php if (!empty($movie['runtime'])): ?>
-                <p><strong>Runtime:</strong> <?= $movie['runtime']; ?></p>
-            <?php endif; ?>
-
-            <?php if (!empty($movie['language'])): ?>
-                <p><strong>Language:</strong> <?= $movie['language']; ?></p>
-            <?php endif; ?>
+            <?php if (!empty($movie['genre'])): ?><p><strong>Genre:</strong> <?= $movie['genre']; ?></p><?php endif; ?>
+            <?php if (!empty($movie['director'])): ?><p><strong>Director:</strong> <?= $movie['director']; ?></p><?php endif; ?>
+            <?php if (!empty($movie['actors'])): ?><p><strong>Actors:</strong> <?= $movie['actors']; ?></p><?php endif; ?>
+            <?php if (!empty($movie['plot'])): ?><p><strong>Plot:</strong> <?= $movie['plot']; ?></p><?php endif; ?>
+            <?php if (!empty($movie['runtime'])): ?><p><strong>Runtime:</strong> <?= $movie['runtime']; ?></p><?php endif; ?>
+            <?php if (!empty($movie['language'])): ?><p><strong>Language:</strong> <?= $movie['language']; ?></p><?php endif; ?>
 
             <!-- Review Form -->
             <?php if (session()->has('user_id')): ?>
@@ -121,7 +109,7 @@
                 <p><strong>Please <a href="<?= base_url('/login'); ?>" style="color: #ff1e56;">Login</a> to leave a review.</strong></p>
             <?php endif; ?>
 
-            <!-- Reviews Section -->
+            <!-- ⭐ Updated Reviews Section -->
             <h3 class="mt-4">Reviews</h3>
             <div id="reviews-section">
                 <?php if (empty($reviews)): ?>
@@ -129,9 +117,12 @@
                 <?php else: ?>
                     <?php foreach ($reviews as $review): ?>
                         <div class="review-box">
-                            <strong style="color: #ff1e56;"><?= $review['username']; ?>:</strong> <?= $review['rating']; ?>/5 ⭐
+                            <strong style="color: #ff1e56;"><?= $review['username']; ?>:</strong>
+                            <?php
+                                $rating = intval($review['rating']);
+                                echo str_repeat("⭐", $rating);
+                            ?>
                             <p><?= $review['review']; ?></p>
-
                             <?php if (session()->get('user_id') == $review['user_id']): ?>
                                 <form method="post" action="<?= base_url('/edit-review/' . $review['id']); ?>" class="edit-review-form">
                                     <textarea name="review" class="form-control mb-1"><?= $review['review']; ?></textarea>
@@ -144,6 +135,10 @@
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
+
+            <!-- 🎥 Nearby Cinemas -->
+            <h3 class="mt-5" style="color: #ff1e56;">🎥 Nearby Cinemas</h3>
+            <div id="cinema-results" class="mt-3 text-start" style="font-size: 0.95rem;"></div>
         </div>
     </div>
 </div>
@@ -153,7 +148,7 @@
     &copy; Pruthviraj Patil - 2310346
 </footer>
 
-<!-- AJAX -->
+<!-- JS Logic -->
 <script>
     $(document).ready(function () {
         $('.review-form').submit(function (e) {
@@ -200,6 +195,56 @@
             }
         });
     });
+
+    function fetchNearbyCinemas(lat, lon) {
+        const query = `
+            [out:json];
+            (
+                node["amenity"="cinema"](around:15000, ${lat}, ${lon});
+            );
+            out body;
+        `;
+
+        fetch("https://overpass-api.de/api/interpreter", {
+            method: "POST",
+            body: query,
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('cinema-results');
+            if (data.elements.length === 0) {
+                container.innerHTML = "<p>No cinemas found near you.</p>";
+                return;
+            }
+
+            container.innerHTML = "";
+            data.elements.forEach(place => {
+                const name = place.tags.name || "Unnamed Cinema";
+                const lat = place.lat;
+                const lon = place.lon;
+
+                const mapEmbed = `<iframe width="100%" height="200" frameborder="0" style="border:0; margin-top:10px;" 
+                    src="https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=16&output=embed" allowfullscreen></iframe>`;
+
+                const div = document.createElement("div");
+                div.innerHTML = `🎬 <strong>${name}</strong><br>${mapEmbed}<br><br>`;
+                container.appendChild(div);
+            });
+        })
+        .catch(() => {
+            document.getElementById('cinema-results').innerHTML = "<p>Error loading cinema data.</p>";
+        });
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            fetchNearbyCinemas(position.coords.latitude, position.coords.longitude);
+        }, () => {
+            document.getElementById('cinema-results').innerHTML = "<p>Location access denied.</p>";
+        });
+    } else {
+        document.getElementById('cinema-results').innerHTML = "<p>Your browser does not support geolocation.</p>";
+    }
 </script>
 
 </body>

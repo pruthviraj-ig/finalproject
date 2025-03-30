@@ -14,7 +14,7 @@ class UserController extends Controller
 
     public function store()
     {
-        $model = new UserModel();  // Removed the escaped backslashes
+        $model = new UserModel();
         
         $data = [
             'username' => $this->request->getPost('username'),
@@ -22,7 +22,7 @@ class UserController extends Controller
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT)
         ];
         
-        $model->save($data);  // Removed the escaped backslashes
+        $model->save($data);
         
         return redirect()->to('/login');
     }
@@ -42,8 +42,10 @@ class UserController extends Controller
 
         if ($user && password_verify($password, $user['password'])) {
             session()->set('user_id', $user['id']);
-            session()->set('username', $user['username']);  // Store username in the session
-            return redirect()->to('/movies');
+            session()->set('username', $user['username']);
+
+            // ✅ Redirect to the welcome page after login
+            return redirect()->to('/welcomepage');
         }
 
         return redirect()->to('/login');
@@ -52,6 +54,6 @@ class UserController extends Controller
     public function logout()
     {
         session()->destroy();
-        return redirect()->to('/login');  // Redirecting to the login page after logout
+        return redirect()->to('/login');
     }
 }
